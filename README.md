@@ -34,7 +34,7 @@ This project was developed as an experiment using pure natural language requirem
 1. Clone the repository:
 
    ```sh
-   git clone https://github.com/yourusername/PocketStoryPoker.git
+   git clone https://github.com/Zefrock/pocketstorypoker.git
    cd PocketStoryPoker
    ```
 
