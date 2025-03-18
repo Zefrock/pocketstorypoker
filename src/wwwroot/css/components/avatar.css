@@ -1,0 +1,97 @@
+/* Card-themed Avatar Styling */
+.card-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.card-avatar.active {
+  border-color: var(--color-gold);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+}
+
+.card-avatar:hover {
+  transform: scale(1.05);
+}
+
+.card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Avatar content structure */
+.card-avatar-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+/* Make initials more prominent */
+.avatar-initials {
+  color: black;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  text-shadow: 0px 0px 6px var(--color-gold);
+  z-index: 1;
+  position: relative;
+}
+
+/* For the session page participant list */
+.participant-avatars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.participant-avatar {
+  width: 36px;
+  height: 36px;
+}
+
+.participant-avatar.large {
+  width: 48px;
+  height: 48px;
+}
+
+.participant-avatar.small {
+  width: 30px;
+  height: 30px;
+}
+
+/* Animation for avatars joining */
+@keyframes avatarPop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.avatar-animate-in {
+  animation: avatarPop 0.4s ease-out forwards;
+}
+
+/* Participant avatar adjustments for the header */
+.header-avatar {
+  border-radius: 4px;
+}

@@ -1,0 +1,86 @@
+@namespace PocketStoryPoker.Components
+@using PocketStoryPoker.Models
+@using Microsoft.AspNetCore.Components
+
+<div class="participant-list">
+
+    @if (Participants != null && Participants.Any())
+    {
+        <ul class="participants-vertical">
+            @foreach (var participant in Participants)
+            {
+                <li class="participant-item @(IsParticipantCurrent(participant.Name) ? "current-user" : "") @(!participant.IsConnected ? "disconnected" : "")">
+                    <div class="participant-avatar">
+                        <CardAvatar 
+                            Name="@participant.Name" 
+                            CssClass="@(IsParticipantCurrent(participant.Name) ? "active" : "")" />
+                        @if (!participant.IsConnected)
+                        {
+                            <div class="disconnected-indicator" title="@participant.Name is disconnected">
+                                <span>⚡</span>
+                            </div>
+                        }
+                    </div>
+                    <span class="participant-name">
+                        @participant.Name
+                        @if (!participant.IsConnected)
+                        {
+                            <span class="disconnected-status">(disconnected)</span>
+                        }
+                    </span>
+            @if (IsGameRunning)
+            {
+                <div class="vote-container">
+                            @{
+                                var hasVote = ParticipantVotes.TryGetValue(participant.Name, out var voteValue);
+                            }
+                            @if (ShowResults && hasVote)
+                            {
+                                Console.WriteLine($"Participant {participant.Name} vote value: {voteValue} (ShowResults={ShowResults}, HasVote={hasVote})");
+                                <span class="participant-vote">@voteValue</span>
+                            }
+
+                            @if (participant.HasVoted && participant.IsConnected)
+                            {
+                                <span class="vote-status voted" title="@participant.Name has voted">✓</span>
+                            }
+                            else if (participant.IsConnected)
+                            {
+                                <span class="vote-status not-voted" title="Waiting for @participant.Name to vote">○</span>
+                            }
+                            else
+                            {
+                                <span class="vote-status disconnected" title="@participant.Name is disconnected">-</span>
+                            }
+                        </div>
+                    }
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="placeholder-text">No participants yet</p>
+    }
+</div>
+
+@code {
+    [Parameter] public List<Participant> Participants { get; set; } = new List<Participant>();
+    [Parameter] public string CurrentUserName { get; set; } = "";
+    [Parameter] public bool IsGameRunning { get; set; }
+    [Parameter] public bool ShowResults { get; set; }
+    [Parameter] public Dictionary<string, string> ParticipantVotes { get; set; } = new();
+
+    protected override void OnParametersSet()
+    {
+        Console.WriteLine($"ShowResults: {ShowResults}");
+        Console.WriteLine($"ParticipantVotes count: {ParticipantVotes.Count}");
+        foreach (var vote in ParticipantVotes)
+        {
+            Console.WriteLine($"Vote: {vote.Key} -> {vote.Value}");
+        }
+        base.OnParametersSet();
+    }
+
+    private bool IsParticipantCurrent(string name) => name.Equals(CurrentUserName, StringComparison.OrdinalIgnoreCase);
+}

@@ -1,0 +1,185 @@
+@page "/"
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.AspNetCore.Components.Web
+
+<div class="poker-home">
+    <!-- Replace welcome text and remove title -->
+    <div class="poker-logo">
+        <p>A collaborative tool for efficient estimation of work items</p>
+    </div>
+
+    <!-- Main cards container -->
+    <div class="poker-cards">
+        <!-- Create session card -->
+        <div class="poker-card create-card">
+            <div class="card-inner">
+                <!-- Decorative corners -->
+                <div class="card-corner corner-tl"></div>
+                <div class="card-corner corner-tr"></div>
+                <div class="card-corner corner-bl"></div>
+                <div class="card-corner corner-br"></div>
+
+                <!-- Card content with title only -->
+                <div class="card-content">
+                    <!-- Header section with title only -->
+                    <div class="card-header-section">
+                        <h2 class="card-title">Create New Table</h2>
+                    </div>
+
+                    <p class="card-text">Start a new Pocket Story Poker game</p>
+
+                    <!-- Use unified "card-actions" container -->
+                    <div class="card-actions">
+                        <button class="btn btn-primary" style="width: 100%; max-width: 220px; min-width: 120px;"
+                            @onclick="CreateSession">
+                            Create
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Join session card -->
+        <div class="poker-card join-card">
+            <div class="card-inner">
+                <!-- Decorative corners -->
+                <div class="card-corner corner-tl"></div>
+                <div class="card-corner corner-tr"></div>
+                <div class="card-corner corner-bl"></div>
+                <div class="card-corner corner-br"></div>
+
+                <!-- Card content with title only -->
+                <div class="card-content">
+                    <!-- Header section with title only -->
+                    <div class="card-header-section">
+                        <h2 class="card-title">Join</h2>
+                    </div>
+
+                    <p class="card-text">Enter session ID to join</p>
+
+                    <!-- Use unified "card-actions" container -->
+                    <div class="card-actions">
+                        <input type="text" class="join-input" placeholder="Enter Session ID" @bind="_sessionInput"
+                            @onkeypress="HandleJoinKeyPress" maxlength="6" style="width: 100%;" />
+                        <button class="btn btn-primary" style="width: 100%; max-width: 220px; min-width: 120px;"
+                            @onclick="JoinSession" disabled="@string.IsNullOrEmpty(_sessionInput)">
+                            Join Table
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<SessionNotFoundModal @ref="_sessionNotFoundModal" />
+
+@code {
+    private string _sessionInput = "";
+    private SessionNotFoundModal? _sessionNotFoundModal;
+
+    private async Task CreateSession()
+    {
+        // Generate a random alphanumeric session ID
+        var sessionId = GenerateSessionId();
+
+        try
+        {
+            // Create the session on the server first
+            await using var connection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/pokerhub"))
+            .Build();
+
+            await connection.StartAsync();
+
+            // Call a hub method to create the session
+            var created = await connection.InvokeAsync<bool>("CreateSession", sessionId);
+
+            if (connection.State != HubConnectionState.Disconnected)
+            {
+                await connection.StopAsync();
+            }
+
+            // If session creation was successful, navigate directly
+            if (created)
+            {
+                NavigationManager.NavigateTo($"/session/{sessionId}");
+            }
+            else
+            {
+                Console.WriteLine("Failed to create session");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating session: {ex.Message}");
+            // If creation fails for any reason, still try to navigate
+            NavigationManager.NavigateTo($"/session/{sessionId}");
+        }
+    }
+
+    private async Task JoinSession()
+    {
+        if (string.IsNullOrWhiteSpace(_sessionInput))
+            return;
+
+        // Check if session exists before navigating
+        if (await SessionExists(_sessionInput))
+        {
+            NavigationManager.NavigateTo($"/session/{_sessionInput}");
+        }
+        else
+        {
+            _sessionNotFoundModal?.Show();
+        }
+    }
+
+    private async Task<bool> SessionExists(string sessionId)
+    {
+        try
+        {
+            await using var tempConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/pokerhub"))
+            .Build();
+
+            await tempConnection.StartAsync();
+            var exists = await tempConnection.InvokeAsync<bool>("SessionExists", sessionId);
+
+            if (tempConnection.State != HubConnectionState.Disconnected)
+            {
+                await tempConnection.StopAsync();
+            }
+
+            return exists;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking if session exists: {ex.Message}");
+            return true;
+        }
+    }
+
+    private async Task HandleJoinKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_sessionInput))
+        {
+            await JoinSession();
+        }
+    }
+
+    private string GenerateSessionId()
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        var random = new Random();
+        var result = new char[6];
+
+        for (int i = 0; i < result.Length; i++)
+        {
+            result[i] = chars[random.Next(chars.Length)];
+        }
+
+        return new string(result);
+    }
+}

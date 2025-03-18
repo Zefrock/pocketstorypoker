@@ -1,0 +1,49 @@
+@namespace PocketStoryPoker.Components
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<div class="modal @(_isVisible ? "modal-visible" : "")" id="sessionEndedModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Session Ended</h3>
+        </div>
+        <div class="modal-body">
+            <div class="session-ended-icon">🏁</div>
+            <p class="session-ended-message">@Message</p>
+        </div>
+        <div class="modal-footer centered-modal-footer">
+            <button type="button" class="btn btn-primary" @onclick="GoToHomePage">Close</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _isVisible = false;
+    private string Message { get; set; } = "This planning poker session has ended.";
+    private bool _isHost = false;
+
+    public void Show(string? message = null, bool isHost = false)
+    {
+        _isHost = isHost;
+
+        if (!string.IsNullOrEmpty(message))
+        {
+            Message = message;
+        }
+
+        _isVisible = true;
+        StateHasChanged();
+    }
+
+    private async Task GoToHomePage()
+    {
+        _isVisible = false;
+
+        // Clean up any possible remaining session data
+        await JSRuntime.InvokeVoidAsync("clearPreviousSessionData");
+
+        // Navigate back home
+        Navigation.NavigateTo("/");
+    }
+}

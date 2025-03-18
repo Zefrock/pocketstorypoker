@@ -1,0 +1,112 @@
+@inherits LayoutComponentBase
+@using PocketStoryPoker.Components
+@using PocketStoryPoker.Pages @* For Session reference *@
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+
+<div class="app-container">
+    <header class="app-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="app-brand">
+                    <h1 @onclick="GoHome">
+                        <span>Pocket</span>
+                        <span class="highlight">Story</span>
+                        <span>Poker</span>
+                    </h1>
+                </div>
+
+                <div class="user-area" @onclick="ShowNameChangeModal" title="Click to change name"
+                    style="cursor: pointer;">
+                    <div class="user-avatar">
+                        <CardAvatar Name="@_userName" CssClass="header-avatar" />
+                    </div>
+                    <span class="user-name">@_userName</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main">
+        @Body
+    </div>
+
+    <footer class="app-footer">
+        <div class="container">
+<p>Developed by Cline Agent and a bunch of LLM models but mainly Claude 3.5 and 3.7, and o3-mini, with a persistent push by <a href="https://github.com/sergiorocha_microsoft">Sérgio Rocha</a></p>
+        </div>
+    </footer>
+
+    <!-- Welcome Modal -->
+    <NameInputModal @ref="_welcomeModal" OnNameSet="HandleNameSet" IsChangeMode="false" />
+
+    <!-- Name Change Modal -->
+    <NameInputModal @ref="_nameChangeModal" OnNameSet="HandleNameSet" IsChangeMode="true" />
+</div>
+
+@code {
+    private string _userName = "Guest";
+    private NameInputModal? _welcomeModal;
+    private NameInputModal? _nameChangeModal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check for a username in localStorage first
+        try
+        {
+            var storedName = await JSRuntime.InvokeAsync<string>("userManager.getUserName");
+            if (!string.IsNullOrEmpty(storedName))
+            {
+                _userName = storedName;
+                // No need to show modal if we have a name
+            }
+            else
+            {
+                // Only show the welcome modal if no name exists
+                await ShowWelcomeModal();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking username: {ex.Message}");
+            // Fallback to showing the welcome modal on error
+            await ShowWelcomeModal();
+        }
+    }
+
+    private async Task ShowWelcomeModal()
+    {
+        // Small delay to ensure component is properly initialized
+        await Task.Delay(300);
+        if (_welcomeModal != null)
+        {
+            // Welcome modal should start with empty name
+            _welcomeModal.SetName("");
+            _welcomeModal.Show();
+        }
+    }
+
+    private async Task ShowNameChangeModal()
+    {
+        // Small delay to ensure component is properly initialized
+        await Task.Delay(300);
+        if (_nameChangeModal != null)
+        {
+            _nameChangeModal.SetName(_userName);
+            _nameChangeModal.Show();
+        }
+    }
+
+    private async Task HandleNameSet(string name)
+    {
+        _userName = name;
+
+        // Store the name in localStorage so other components can access it
+        await JSRuntime.InvokeVoidAsync("userManager.saveUserName", name);
+    }
+
+    private void GoHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

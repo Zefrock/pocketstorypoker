@@ -1,0 +1,18 @@
+{
+  "name": "poker-story",
+  "version": "1.0.0",
+  "description": "A planning poker application built with Blazor and SignalR",
+  "scripts": {
+    "build": "dotnet build",
+    "publish": "dotnet publish -c Release",
+    "app": "cd out && PocketStoryPoker.exe && cd ..",
+    "start": "npm run build && npm run app",
+    "start:dev": "cd src && dotnet watch run && cd ..",
+    "docker:build": "docker build -t pokerstory .",
+    "docker:run": "docker run -d --rm -p 5555:80 --name pokerstory_app pokerstory",
+    "docker:stop": "docker stop pokerstory_app",
+    "docker:start": "npm run docker:build && npm run docker:run"
+  },
+  "author": "",
+  "license": "ISC"
+}

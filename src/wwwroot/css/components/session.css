@@ -1,0 +1,62 @@
+/* ...existing styles... */
+
+/* Add styles for the warning button */
+.btn-outline-warning {
+  background-color: transparent;
+  border: 1px solid #f0ad4e;
+  color: #f0ad4e;
+}
+
+.btn-outline-warning:hover {
+  background-color: rgba(240, 173, 78, 0.1);
+  border-color: #f0ad4e;
+  color: #ffbd67;
+}
+
+/* Make session content background match the home page */
+.session-content {
+  background: #1e824c; /* Base poker felt green */
+  background-image: 
+    /* Subtle noise texture */ url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADQLyYwAAAAE3RSTlMAGAIEEAwgDCIkFCYoHBosKB4QPCznZgAABGlJREFUeNrFmleC2zAMRKkiN9nS1t3/VHFTh4YlP382D56AID3MkCJA4EShVERQVS09i1J+3jBKSZBdZ6VE8gsShVIEWB1yj501gZPhMrK02HpiWZlsK5IdDiKVTBERdMCJSIoYx9dKLfcYScswIonIRppkFRGMBImEJCIZ3WZywK12E30KK2g7IBsRte1S/MIOaNtYJXS7pDjYiUSgHZCElA4wYRESiRb4VPyDiGBkEypImk9K63MmkyBFi/MmektNwn6TMe51c0JCunYKiZMSZqZ0PZihZJIGZkLe5wZShJBKPkZMJZoMbkKaQa3LTW6wpHQTgOvkl0nCHjFp1oUDiVabZCdBIElQJEWyH0gWBAEVxZUTimKhKUlRI3EghZNdiqQkyUOKZEBJFPxICnyMFCXHIC9JNiQnobKq/yQyzwgdJLmYrCpP6IuS3OalK52QkOYkPCXdT17qZxJSn0TopxCMp+T7ydt9rrxmXiqdk2RcvsRl8tKn5AU+N+GHyWvzVvrE5iXlNpNb3m6ZdP1Mcrsm77tNLikcySzRsl1LfT5HBMaKSIGldxGNVP/VnB0RDgN/FLFOh1kHRXEaYqTfBkXP1ViXHB2RFdXZ1OsyXlOSDhNKpNLckeqQ+3R2RFszJ60D0sSVt1S7CTr7lPh76fOULF7mwx+OyDJHPnzWMfmM5dOlPWLqvdJ5i0j1o4hLMv9J9D59TxL5kKR+JPmm8Yq+hbxBFP1H90t2fSuekiBfQrgk01EyK35HYuxcJA41Xsuk+/yeZE+SxiSJX5Kcj0l/Jmz6bfKSzQvTAZK4l0T/SpLZVjmJzaNkbI6QbpLkfKNI3K6xPEh6TzP5OYzE91ZV7igZmwYRN4t7SeZWyTieKK6XP5Qey9549VM7SeKPkiz+luQsFWeor0iG5Ksma72p70j+U5Ljjf5SXEeNRCp6JyLhvSSJQZS0l0Qe7UW08XZ6SBLfkvQaJeklyXzWqDQk8iBJ7PPkvOrz/0YyP28hSn3Z5/7u5uh3JeX6/rDMGyRRnp43oeQtJDfx0RSflcTibfEseaPktBjkPm9VnIW0t5DcVC7v/OquEdPn3SQ23pz/1kxe62yucIPkb0if8lAjJ1nbyJrOid9q6cJWK2F7T7YJ/2SbW1czpCg66Jzs657xaqHrZIaNPQp1fcLs9mT5QXLXHTMfc8h9BLnZln2ufK58jZRhuWR85TP/dObFxL0ec9+SeBJycjfmcjZLP0KOTpejV+XoC/TRVznDIc+Ei3Mxw4+Ev9atOF6OBT2tyxmOFc7oDsecp3PO9h3zn87c6fSj41jxHbkl7J2N5RYcAdKdB0KOLGJHVrIj89mRQe3I5nZkhTuZOu7IzndkGjyy2R3ZD4+Mj0cWzCND6JE19sjke2RbPjJSH1m8jyzoRxb5IwtR8a8F5siieGSJvJGF+uwSe+1S3LC2RPu/iLXeWZTm5cLDuxjxL+bNPyx//8pprJH+AIjC0CFxKIhCAAAAAElFTkSuQmCC"),
+    /* Darker noise for depth */
+      url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAMAAABHPGVmAAAAPFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADQLyYwAAAAE3RSTlMAGAIEEAwgDCIkFCYoHBosKB4QPCznZgAABGlJREFUeNrFmleC2zAMRKkiN9nS1t3/VHFTh4YlP382D56AID3MkCJA4EShVERQVS09i1J+3jBKSZBdZ6VE8gsShVIEWB1yj501gZPhMrK02HpiWZlsK5IdDiKVTBERdMCJSIoYx9dKLfcYScswIonIRppkFRGMBImEJCIZ3WZywK12E30KK2g7IBsRte1S/MIOaNtYJXS7pDjYiUSgHZCElA4wYRESiRb4VPyDiGBkEypImk9K63MmkyBFi/MmektNwn6TMe51c0JCunYKiZMSZqZ0PZihZJIGZkLe5wZShJBKPkZMJZoMbkKaQa3LTW6wpHQTgOvkl0nCHjFp1oUDiVabZCdBIElQJEWyH0gWBAEVxZUTimKhKUlRI3EghZNdiqQkyUOKZEBJFPxICnyMFCXHIC9JNiQnobKq/yQyzwgdJLmYrCpP6IuS3OalK52QkOYkPCXdT17qZxJSn0TopxCMp+T7ydt9rrxmXiqdk2RcvsRl8tKn5AU+N+GHyWvzVvrE5iXlNpNb3m6ZdP1Mcrsm77tNLikcySzRsl1LfT5HBMaKSIGldxGNVP/VnB0RDgN/FLFOh1kHRXEaYqTfBkXP1ViXHB2RFdXZ1OsyXlOSDhNKpNLckeqQ+3R2RFszJ60D0sSVt1S7CTr7lPh76fOULF7mwx+OyDJHPnzWMfmM5dOlPWLqvdJ5i0j1o4hLMv9J9D59TxL5kKR+JPmm8Yq+hbxBFP1H90t2fSuekiBfQrgk01EyK35HYuxcJA41Xsuk+/yeZE+SxiSJX5Kcj0l/Jmz6bfKSzQvTAZK4l0T/SpLZVjmJzaNkbI6QbpLkfKNI3K6xPEh6TzP5OYzE91ZV7igZmwYRN4t7SeZWyTieKK6XP5Qey9549VM7SeKPkiz+luQsFWeor0iG5Ksma72p70j+U5Ljjf5SXEeNRCp6JyLhvSSJQZS0l0Qe7UW08XZ6SBLfkvQaJeklyXzWqDQk8iBJ7PPkvOrz/0YyP28hSn3Z5/7u5uh3JeX6/rDMGyRRnp43oeQtJDfx0RSflcTibfEseaPktBjkPm9VnIW0t5DcVC7v/OquEdPn3SQ23pz/1kxe62yucIPkb0if8lAjJ1nbyJrOid9q6cJWK2F7T7YJ/2SbW1czpCg66Jzs657xaqHrZIaNPQp1fcLs9mT5QXLXHTMfc8h9BLnZln2ufK58jZRhuWR85TP/dObFxL0ec9+SeBJycjfmcjZLP0KOTpejV+XoC/TRVznDIc+Ei3Mxw4+Ev9atOF6OBT2tyxmOFc7oDsecp3PO9h3zn87c6fSj41jxHbkl7J2N5RYcAdKdB0KOLGJHVrIj89mRQe3I5nZkhTuZOu7IzndkGjyy2R3ZD4+Mj0cWzCND6JE19sjke2RbPjJSH1m8jyzoRxb5IwtR8a8F5siieGSJvJGF+uwSe+1S3LC2RPu/iLXeWZTm5cLDuxjxL+bNPyx//8pprJH+AIjC0CFxKIhCAAAAAElFTkSuQmCC"),
+    /* Main radial gradient */ radial-gradient(circle, #27ae60 0%, #196f3d 100%);
+  background-blend-mode: overlay, overlay, normal;
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+/* Felt texture overlay */
+.session-content::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%231e824c' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+  opacity: 1;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Add table edge styling */
+.session-content::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: none;
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.4);
+  border-radius: 0;
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Make content appear above the background layers */
+.session-content > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ...existing styles... */

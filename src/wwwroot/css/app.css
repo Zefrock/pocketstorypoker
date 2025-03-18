@@ -1,0 +1,82 @@
+/* Add global button hover effect */
+
+/* Global button styles to incorporate the club suit icon */
+.btn,
+button {
+  position: relative;
+  overflow: visible;
+  transition: padding 0.2s ease;
+}
+
+/* Fix global button hover effects */
+
+/* Make sure the hover effect only applies to specific buttons, not all buttons */
+.btn:hover,
+button:hover {
+  /* Remove the general padding adjustment on hover */
+  padding-right: inherit; /* Reset the padding for all buttons */
+}
+
+/* Remove global club icon hover effects */
+
+/* Remove club icon from all buttons */
+.btn:hover::after,
+button:hover::after,
+.btn-gold:hover::after,
+.btn-dark:hover::after,
+.btn-primary:hover::after,
+.btn-secondary:hover::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Reset padding adjustments */
+.btn:hover,
+button:hover,
+.btn-gold:hover,
+.btn-dark:hover,
+.btn-primary:hover,
+.btn-secondary:hover {
+  padding-right: inherit; /* Use original padding */
+}
+
+/* Set explicit hover styles only for buttons that need them */
+.btn-gold:hover,
+.btn-dark:hover,
+.btn-primary:hover,
+.btn-secondary:hover {
+  padding-right: calc(1.2em + 15px); /* Add space on right side for icon */
+}
+
+/* Remove the club hover icon from all buttons by default */
+.btn:not(.btn-gold, .btn-dark, .btn-primary, .btn-secondary):hover::after,
+button:not(.btn-gold, .btn-dark, .btn-primary, .btn-secondary):hover::after {
+  content: none;
+}
+
+/* Ensure the button hover takes precedence over card hover */
+.btn-gold:hover,
+.btn-dark:hover {
+  z-index: 20 !important;
+  position: relative !important;
+}
+
+/* Add club pointer for all themed buttons */
+
+/* Apply the custom club cursor to all themed buttons throughout the app */
+.btn-primary,
+.btn-secondary,
+.btn-success,
+.btn-warning {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><text y='20' font-size='20' fill='white'>♣</text></svg>"),
+    auto;
+}
+
+/* Light colored buttons need dark club */
+.btn-light,
+.btn-outline-light,
+.btn-outline-primary,
+.btn-outline-secondary {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><text y='20' font-size='20' fill='black'>♣</text></svg>"),
+    auto;
+}

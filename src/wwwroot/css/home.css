@@ -1,0 +1,13 @@
+/* Unified card-actions styling (merged join-form styling) */
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  /* Additional styling from join-form may go here */
+}
+
+.card-actions input,
+.card-actions button {
+  width: 100%;
+  box-sizing: border-box;
+}

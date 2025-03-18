@@ -1,0 +1,21 @@
+/* Session Ended Modal specific styles */
+
+.session-ended-icon {
+    font-size: 3rem;
+    margin: 1rem 0;
+    text-align: center;
+    display: block;
+    width: 100%;
+    animation: bounce 0.5s ease-in-out;
+}
+
+.session-ended-message {
+    text-align: center;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}

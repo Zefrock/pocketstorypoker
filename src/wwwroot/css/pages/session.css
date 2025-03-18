@@ -1,0 +1,282 @@
+/* Session page styling */
+.session-container {
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+}
+
+.session-header {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Left sidebar */
+.session-sidebar {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  width: 25%;
+  max-width: 300px;
+}
+
+.sidebar-header {
+  margin-bottom: 1rem;
+}
+
+.sidebar-header h3 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.2rem;
+  color: var(--color-white);
+}
+
+.sidebar-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-white);
+  opacity: 0.9;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 0.5rem;
+}
+
+.session-id {
+  color: var(--color-gold);
+  letter-spacing: 1px;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Style the scrollbar for the sidebar content */
+.sidebar-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: var(--color-gold);
+  border-radius: 4px;
+}
+
+.sidebar-footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-footer .btn {
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+}
+
+.session-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.session-info h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--color-white);
+}
+
+.session-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-outline-light {
+  background-color: transparent;
+  border: 1px solid var(--color-white);
+  color: var(--color-white);
+}
+
+.btn-outline-light:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Add styles for the danger button */
+.btn-outline-danger {
+  background-color: transparent;
+  border: 1px solid #ff6b6b;
+  color: #ff6b6b;
+}
+
+.btn-outline-danger:hover {
+  background-color: rgba(255, 107, 107, 0.1);
+  color: #ff8080;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.icon {
+  margin-right: 0.25rem;
+}
+
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.user-list h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-white);
+  opacity: 0.9;
+}
+
+.participant-avatars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.participant-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--color-dark-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.participant-avatar.active {
+  border: 2px solid var(--color-gold);
+}
+.avatar-initials {
+  color: black;
+}
+.placeholder-text {
+  color: var(--color-white);
+  opacity: 0.6;
+  font-size: 0.9rem;
+  margin-left: 0.5rem;
+}
+
+.session-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.empty-session-message {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: var(--color-gold);
+  opacity: 0.5;
+}
+
+.empty-session-message h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-gold);
+}
+
+.empty-session-message p {
+  margin-bottom: 0.25rem;
+  color: var(--color-white);
+  opacity: 0.8;
+}
+
+.mt-3 {
+  margin-top: 1.5rem;
+}
+
+/* Confirm dialog styles */
+.confirm-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .session-container {
+    flex-direction: column;
+  }
+
+  .session-sidebar {
+    min-width: 100%;
+    width: 100%;
+    max-width: none;
+    flex-direction: column;
+  }
+
+  .sidebar-content {
+    max-height: 200px;
+    margin-bottom: 1rem;
+  }
+
+  .sidebar-footer {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .sidebar-footer .btn {
+    width: calc(50% - 0.25rem);
+  }
+}
+
+@media (max-width: 576px) {
+  .session-header {
+    padding: 0.75rem;
+  }
+
+  .session-info h2 {
+    font-size: 1.2rem;
+  }
+
+  .empty-icon {
+    font-size: 2.5rem;
+  }
+}

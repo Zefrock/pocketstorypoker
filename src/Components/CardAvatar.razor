@@ -1,0 +1,60 @@
+@namespace PocketStoryPoker.Components
+
+<div class="card-avatar @CssClass" title="@Name" style="background-color: @BackgroundColor;">
+    <div class="card-avatar-content">
+        <span class="avatar-initials">@Initials</span>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Name { get; set; } = "Guest User";
+    [Parameter] public string CssClass { get; set; } = "";
+    [Parameter] public bool IsActive { get; set; } = false;
+
+    private string BackgroundColor => GenerateColor();
+    private string Initials => GetInitials(Name);
+
+    protected override void OnInitialized()
+    {
+        if (IsActive)
+        {
+            CssClass += " active";
+        }
+    }
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "?";
+        var initials = string.Join("", name.Split(' ')
+        .Where(s => !string.IsNullOrEmpty(s))
+        .Take(2)
+        .Select(s => s[0]));
+        return initials.Length > 0 ? initials.ToUpper() : "?";
+    }
+
+    private string GenerateColor()
+    {
+        if (string.IsNullOrEmpty(Name) || Name == "Guest User")
+        {
+            return "#555555"; // Default gray
+        }
+        var hash = 0;
+        foreach (var c in Name)
+        {
+            hash = ((hash << 5) - hash) + c;
+        }
+
+        // Expanded color palette with 30 distinct colors for better variability
+        var colors = new[] {
+           "#d53a9d", "#00b894", "#f1c40f", "#e74c3c",
+            "#40739e", "#487eb0", "#e67e22", "#16a085",
+            "#3498db", "#9b59b6", "#f39c12", "#27ae60",
+            "#8e44ad", "#f1c40f", "#d35400", "#c0392b",
+            "#34495e", "#7f8c8d", "#bdc3c7", "#f39c12",
+            "#27ae60", "#3498db", "#8e44ad", "#2c3e50", "#16a085"
+        };
+
+        var index = Math.Abs(hash) % colors.Length;
+        return colors[index];
+    }
+}

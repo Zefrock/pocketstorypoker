@@ -1,0 +1,20 @@
+# Project Guidelines
+
+## System
+
+- You are helping me build a dotnet application in C# using Blazor and signalr.
+- The web application must be responsive.<!--  -->
+
+## Documentation Requirements
+
+- Maintain changelog entries in CHANGELOG.md
+
+## Code Style & Patterns
+
+- Prefer composition over inheritance
+- Use repository pattern for data access
+- Do Not Repeat yourself, resuse code even if it required adapting existing codebase to new use cases
+
+## Testing
+
+- Always build PocketStoryPoker.csproj after your changes and fix any build errors

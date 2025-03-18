@@ -1,0 +1,24 @@
+@namespace PocketStoryPoker.Components
+
+@code {
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public bool Selected { get; set; }
+    [Parameter] public bool Small { get; set; }
+    [Parameter] public EventCallback<string> OnClick { get; set; }
+
+    private async Task HandleClick()
+    {
+        if (OnClick.HasDelegate)
+        {
+            await OnClick.InvokeAsync(Value);
+        }
+    }
+}
+
+<div class="playing-card @(Selected ? "selected" : "") @(Small ? "small" : "")" @onclick="HandleClick">
+    <div class="card-inner">
+        <div class="card-value-top">@Value</div>
+        <div class="card-center">@Value</div>
+        <div class="card-value-bottom">@Value</div>
+    </div>
+</div>

@@ -1,0 +1,41 @@
+@namespace PocketStoryPoker.Components
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<div class="modal @(_isVisible ? "modal-visible" : "")" id="sessionAlreadyOpenModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Session Already Open</h3>
+        </div>
+        <div class="modal-body">
+            <div class="warning-icon">⚠️</div>
+            <p class="warning-message">This session is already open in another tab or window.</p>
+            <p>Please continue using your existing session or close it first before opening it here.</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary" @onclick="GoToHomePage">Return to Home</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _isVisible = false;
+
+    public void Show()
+    {
+        _isVisible = true;
+        StateHasChanged();
+    }
+
+    private async Task GoToHomePage()
+    {
+        _isVisible = false;
+
+        // Ensure we're clearing any session tracking on navigation
+        await JSRuntime.InvokeVoidAsync("sessionManager.clearActiveSession");
+
+        // Navigate back to home
+        Navigation.NavigateTo("/");
+    }
+}

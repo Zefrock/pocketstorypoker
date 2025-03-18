@@ -1,0 +1,761 @@
+@page "/session/{SessionId}"
+@using PocketStoryPoker.Components
+@using PocketStoryPoker.Models
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
+
+<div class="session-container">
+    <!-- Left sidebar -->
+    <div class="session-sidebar">
+        <div class="sidebar-header">
+            <h3>Session: <span class="session-id">@SessionId</span></h3>
+            <h4>Participants (@_participants.Count)</h4>
+        </div>
+
+        <div class="sidebar-content">
+            <ParticipantList 
+                Participants="@_participants" 
+                CurrentUserName="@_userName" 
+                IsGameRunning="@(_gameRunning || (_estimationGame?.IsShowingResults ?? false))"
+                ShowResults="@(_estimationGame?.IsShowingResults ?? false)"
+                ParticipantVotes="@(_estimationGame?.ParticipantVotes ?? new())" />
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="btn btn-outline-light btn-sm" @onclick="CopySessionLink">
+                <span class="icon">🔗</span> Copy Invite Link
+            </button>
+            
+            <!-- All participants can end the session or leave -->
+            <button class="btn btn-outline-warning btn-sm" @onclick="LeaveSession">
+                <span class="icon">🚪</span> Leave Session
+            </button>
+            
+            <button class="btn btn-outline-danger btn-sm" @onclick="EndSession">
+                <span class="icon">✖</span> End Session
+            </button>
+        </div>
+    </div>
+
+    <!-- Main content area -->
+    <div class="session-content">
+        <EstimationGame 
+            @ref="_estimationGame"
+            HubConnection="@_hubConnection"
+            SessionId="@SessionId"
+            UserName="@_userName"
+            OnUserVoted="HandleUserVoted"
+            OnGameEnded="EndEstimationGame" />
+    </div>
+</div>
+
+<SessionEndedModal @ref="_sessionEndedModal" />
+<SessionAlreadyOpenModal @ref="_sessionAlreadyOpenModal" />
+<SessionNotFoundModal @ref="_sessionNotFoundModal" />
+
+@code {
+    [Parameter]
+    public string? SessionId { get; set; }
+
+    private string _userName = "Guest";
+    private HubConnection? _hubConnection;
+    private List<Participant> _participants = new List<Participant>();
+    private bool _isConnected = false;
+    private SessionEndedModal? _sessionEndedModal;
+    private SessionAlreadyOpenModal? _sessionAlreadyOpenModal;
+    private SessionNotFoundModal? _sessionNotFoundModal;
+    private bool _sessionEnded = false;
+    private bool _disposed = false;
+    private CancellationTokenSource? _reconnectCts;
+    private string _disconnectionReason = string.Empty;
+
+    private bool _gameRunning = false;
+    private EstimationGame _estimationGame = null!;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (_estimationGame != null)
+        {
+            Console.WriteLine($"EstimationGame state: ShowResults={_estimationGame.IsShowingResults}, VotesCount={_estimationGame.ParticipantVotes.Count}");
+            foreach (var vote in _estimationGame.ParticipantVotes)
+            {
+                Console.WriteLine($"Vote from Session: {vote.Key} -> {vote.Value}");
+            }
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Check for duplicate sessions whenever parameters change
+        if (!string.IsNullOrEmpty(SessionId))
+        {
+            try
+            {
+                bool isAlreadyActive = await JSRuntime.InvokeAsync<bool>("sessionManager.isSessionActive", SessionId);
+                if (isAlreadyActive)
+                {
+                    // Show modal and prevent further initialization
+                    _sessionAlreadyOpenModal?.Show();
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in OnParametersSetAsync: {ex.Message}");
+            }
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Create cancellation token source for reconnection
+        _reconnectCts = new CancellationTokenSource();
+
+        // Build the connection
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/pokerhub"))
+            .WithAutomaticReconnect(new[] { TimeSpan.Zero, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5) })
+            .Build();
+
+        // Register event handlers
+        RegisterSignalREvents();
+
+        await Task.CompletedTask;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                // First check if the session exists
+                if (!string.IsNullOrEmpty(SessionId))
+                {
+                    await using var tempConnection = new HubConnectionBuilder()
+                        .WithUrl(Navigation.ToAbsoluteUri("/pokerhub"))
+                        .Build();
+
+                    try
+                    {
+                        await tempConnection.StartAsync();
+                        bool sessionExists = await tempConnection.InvokeAsync<bool>("SessionExists", SessionId);
+
+                        if (!sessionExists)
+                        {
+                            _sessionNotFoundModal?.Show();
+                            return;
+                        }
+                        
+                        // Check game state
+                        var gameState = await tempConnection.InvokeAsync<string>("GetCurrentGameState", SessionId);
+                        if (gameState == "ACTIVE_GAME")
+                        {
+                            _gameRunning = true;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error checking session existence: {ex.Message}");
+                    }
+                    finally
+                    {
+                        if (tempConnection.State != HubConnectionState.Disconnected)
+                        {
+                            await tempConnection.StopAsync();
+                        }
+                    }
+                }
+
+                // Continue with normal initialization
+                if (!string.IsNullOrEmpty(SessionId))
+                {
+                    try {
+                        bool isAlreadyActive = await JSRuntime.InvokeAsync<bool>("sessionManager.isSessionActive", SessionId);
+                        if (isAlreadyActive)
+                        {
+                            _sessionAlreadyOpenModal?.Show();
+                            return;
+                        }
+
+                        // Mark this session as active in this tab
+                        await JSRuntime.InvokeVoidAsync("sessionManager.markSessionActive", SessionId);
+                    }
+                    catch (Exception ex) {
+                        Console.WriteLine($"Error checking session active state: {ex.Message}");
+                    }
+                }
+
+                // Continue with normal initialization
+                var storedName = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userName");
+                if (!string.IsNullOrEmpty(storedName))
+                {
+                    _userName = storedName;
+                }
+
+                // Store current session ID
+                if (!string.IsNullOrEmpty(SessionId))
+                {
+                    await JSRuntime.InvokeVoidAsync("localStorage.setItem", "currentSessionId", SessionId);
+                }
+
+                // Connect if we have a username
+                if (!string.IsNullOrEmpty(_userName))
+                {
+                    await ConnectToSession();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in OnAfterRenderAsync: {ex.Message}");
+        }
+    }
+
+    private async Task ConnectToSession()
+    {
+        if (_disposed || _sessionEnded || _reconnectCts == null || _reconnectCts.IsCancellationRequested)
+            return;
+
+        if (_hubConnection == null) return;
+
+        try
+        {
+            if (_hubConnection.State == HubConnectionState.Disconnected)
+            {
+                await _hubConnection.StartAsync(_reconnectCts.Token);
+                _isConnected = true;
+                Console.WriteLine("SignalR connection started successfully");
+
+                if (!_sessionEnded && !string.IsNullOrEmpty(SessionId))
+                {
+                    Console.WriteLine($"Connecting to session: {SessionId} as {_userName}");
+                    await _hubConnection.SendAsync("JoinSession", _userName, SessionId, _reconnectCts.Token);
+                    Console.WriteLine($"Joined session: {SessionId} as {_userName}");
+                    
+                    // Don't force StateHasChanged here - wait for the server to send the updated participant list
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Connection attempt was canceled");
+        }
+        catch (ObjectDisposedException)
+        {
+            Console.WriteLine("HubConnection was disposed during connection attempt");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error connecting to SignalR hub: {ex.Message}");
+            _isConnected = false;
+
+            if (!_disposed && !_sessionEnded && _reconnectCts != null && !_reconnectCts.IsCancellationRequested)
+            {
+                try
+                {
+                    await Task.Delay(2000, _reconnectCts.Token);
+                    if (!_disposed && !_sessionEnded)
+                    {
+                        await ConnectToSession();
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    Console.WriteLine("Reconnection was canceled");
+                }
+            }
+        }
+    }
+
+    private void RegisterSignalREvents()
+    {
+        if (_hubConnection == null) return;
+
+        _hubConnection.On<Participant>("ParticipantJoined", async (participant) =>
+        {
+            Console.WriteLine($"→ Participant joined: {participant.Name}");
+            if (!_participants.Any(p => p.ConnectionId == participant.ConnectionId))
+            {
+                _participants.Add(participant);
+                await InvokeAsync(() => { StateHasChanged(); return Task.CompletedTask; });
+            }
+        });
+
+        _hubConnection.On<Participant>("ParticipantLeft", async (participant) =>
+        {
+            Console.WriteLine($"← Participant left: {participant.Name}");
+            var existingParticipant = _participants.FirstOrDefault(p => p.ConnectionId == participant.ConnectionId);
+            if (existingParticipant != null)
+            {
+                _participants.Remove(existingParticipant);
+                await InvokeAsync(() => { StateHasChanged(); return Task.CompletedTask; });
+            }
+        });
+
+        _hubConnection.On<Participant>("HostChanged", async (newHost) =>
+        {
+            Console.WriteLine($"★ Host changed to: {newHost.Name}");
+            foreach (var p in _participants)
+            {
+                p.IsHost = (p.ConnectionId == newHost.ConnectionId);
+            }
+            await InvokeAsync(() => { StateHasChanged(); return Task.CompletedTask; });
+        });
+
+        _hubConnection.On<List<Participant>>("SessionParticipants", async (participants) =>
+        {
+            Console.WriteLine($"◆ Received participants list: {participants.Count} participants");
+            _participants = participants;
+            await InvokeAsync(() => { StateHasChanged(); return Task.CompletedTask; });
+        });
+
+        _hubConnection.Closed += async (error) =>
+        {
+            if (_sessionEnded)
+            {
+                Console.WriteLine($"Connection closed: Session was ended explicitly");
+            }
+            else
+            {
+                Console.WriteLine($"Connection closed: {error?.Message ?? "unknown reason"}");
+            }
+
+            _isConnected = false;
+
+            if (!_sessionEnded && !_disposed && _reconnectCts != null && !_reconnectCts.IsCancellationRequested)
+            {
+                try
+                {
+                    Console.WriteLine("Attempting reconnection after connection close...");
+                    await Task.Delay(2000, _reconnectCts.Token);
+                    await ConnectToSession();
+                }
+                catch (OperationCanceledException)
+                {
+                    Console.WriteLine("Reconnection on closed was canceled");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error in reconnection: {ex.Message}");
+                }
+            }
+        };
+
+        _hubConnection.On<string>("SessionEnded", async (message) =>
+        {
+            Console.WriteLine($"Session ended event received: {message}");
+            _sessionEnded = true;
+            _disconnectionReason = message;
+
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "currentSessionId");
+                await JSRuntime.InvokeVoidAsync(
+                    "localStorage.setItem",
+                    "lastSessionEndReason",
+                    $"Session ended at {DateTime.Now}: {message}"
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error handling session end: {ex.Message}");
+            }
+
+            if (_sessionEndedModal != null)
+            {
+                await InvokeAsync(() => {
+                    _sessionEndedModal.Show(message);
+                    StateHasChanged();
+                    return Task.CompletedTask;
+                });
+            }
+            else
+            {
+                Navigation.NavigateTo("/");
+            }
+        });
+
+        _hubConnection.On("GameStarted", async () =>
+        {
+            _gameRunning = true;
+            await InvokeAsync(() => { StateHasChanged(); return Task.CompletedTask; });
+        });
+
+        _hubConnection.On("ShowResults", async () =>
+        {
+            Console.WriteLine("Session: ShowResults received, forcing state update");
+            await InvokeAsync(() => { StateHasChanged(); return Task.CompletedTask; });
+        });
+
+        // Add handler for participant reconnection
+        _hubConnection.On<Participant>("ParticipantReconnected", async (participant) =>
+        {
+            Console.WriteLine($"↩ Participant reconnected: {participant.Name}");
+            
+            // Update or add the participant by connection ID
+            var existingIndex = _participants.FindIndex(p => 
+                p.ConnectionId == participant.ConnectionId);
+                
+            if (existingIndex >= 0)
+            {
+                // Update existing participant
+                _participants[existingIndex] = participant;
+            }
+            else
+            {
+                // If we can't find by connection ID, try by name (fallback)
+                existingIndex = _participants.FindIndex(p => 
+                    p.Name.Equals(participant.Name, StringComparison.OrdinalIgnoreCase));
+                    
+                if (existingIndex >= 0)
+                {
+                    _participants[existingIndex] = participant;
+                }
+                else
+                {
+                    // Add as new participant
+                    _participants.Add(participant);
+                }
+            }
+            
+            await InvokeAsync(() => 
+            {
+                StateHasChanged();
+                return Task.CompletedTask;
+            });
+        });
+
+        // Add handler for participant disconnection
+        _hubConnection.On<Participant>("ParticipantDisconnected", async (participant) =>
+        {
+            Console.WriteLine($"⚡ Participant disconnected: {participant.Name}");
+            
+            // Find and update the disconnected participant by connection ID
+            var existingParticipant = _participants.FirstOrDefault(p => 
+                p.ConnectionId == participant.ConnectionId);
+                
+            if (existingParticipant != null)
+            {
+                existingParticipant.IsConnected = false;
+                existingParticipant.DisconnectedAt = participant.DisconnectedAt;
+            await InvokeAsync(() => {
+                StateHasChanged();
+                return Task.CompletedTask;
+                });
+            }
+            else
+            {
+                // Fallback to name lookup if connection ID not found
+                var existingByName = _participants.FirstOrDefault(p => 
+                    p.Name.Equals(participant.Name, StringComparison.OrdinalIgnoreCase));
+                    
+                if (existingByName != null)
+                {
+                    existingByName.IsConnected = false;
+                    existingByName.DisconnectedAt = participant.DisconnectedAt;
+            await InvokeAsync(() => {
+                StateHasChanged();
+                return Task.CompletedTask;
+            });
+                }
+            }
+        });
+
+        // Handle participant updates - both individual and list syncs
+        _hubConnection.On<Participant>("ParticipantUpdated", async (participant) =>
+        {
+            Console.WriteLine($"ℹ Participant updated: {participant.Name}");
+            
+            // Find by connection ID first
+            var existingIndex = _participants.FindIndex(p => 
+                p.ConnectionId == participant.ConnectionId);
+
+            // If not found by connection ID, try by name
+            if (existingIndex < 0)
+            {
+                existingIndex = _participants.FindIndex(p => 
+                    p.Name.Equals(participant.Name, StringComparison.OrdinalIgnoreCase));
+            }
+                
+            // Update or add the participant
+            if (existingIndex >= 0)
+            {
+                // Update existing participant in a new list
+                var updatedParticipants = new List<Participant>(_participants);
+                updatedParticipants[existingIndex] = participant;
+                _participants = updatedParticipants;
+            }
+            else
+            {
+                // Add as new participant
+                _participants.Add(participant);
+            }
+
+            // Ensure UI updates
+            await InvokeAsync(() => {
+                Console.WriteLine($"Updating UI for participant: {participant.Name}");
+                StateHasChanged();
+                return Task.CompletedTask;
+            });
+        });
+    }
+
+    public async Task UpdateUserName(string name)
+    {
+        if (_hubConnection == null || string.IsNullOrEmpty(SessionId))
+            return;
+
+        var oldName = _userName;
+        _userName = name;
+        Console.WriteLine($"Username updated from {oldName} to: {_userName}");
+
+        try
+        {
+            // First update the local list immediately
+            var existingParticipant = _participants.FirstOrDefault(p => 
+                p.ConnectionId == _hubConnection.ConnectionId || 
+                p.Name.Equals(oldName, StringComparison.OrdinalIgnoreCase));
+
+            if (existingParticipant != null)
+            {
+                existingParticipant.Name = name;
+                var updatedParticipants = new List<Participant>(_participants);
+                _participants = updatedParticipants;
+
+                // Force immediate UI update
+            await InvokeAsync(() => {
+                StateHasChanged();
+                return Task.CompletedTask;
+            });
+            }
+
+            // Then update the server
+            await _hubConnection.SendAsync("UpdateParticipantName", SessionId, oldName, name);
+
+            // Finally reconnect to update the connection context
+            await ConnectToSession();
+
+            // Force another UI update after everything is done
+            await InvokeAsync(() => {
+                StateHasChanged();
+                return Task.CompletedTask;
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating username: {ex.Message}");
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        _sessionEnded = true;
+
+        if (_reconnectCts != null)
+        {
+            try
+            {
+                _reconnectCts.Cancel();
+                await Task.Delay(100);
+                _reconnectCts.Dispose();
+                _reconnectCts = null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error disposing CTS: {ex.Message}");
+            }
+        }
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("eval", "void(0)");
+            await JSRuntime.InvokeVoidAsync("sessionManager.clearActiveSession");
+        }
+        catch (JSDisconnectedException)
+        {
+            Console.WriteLine("Circuit already disconnected, skipping JS calls");
+        }
+        catch (TaskCanceledException)
+        {
+            Console.WriteLine("Task canceled during disposal, skipping JS calls");
+        }
+
+        if (_hubConnection is not null)
+        {
+            try
+            {
+                if (_isConnected && !string.IsNullOrEmpty(SessionId))
+                {
+                    try
+                    {
+                        await _hubConnection.SendAsync("LeaveSession", SessionId);
+                        Console.WriteLine($"Left session: {SessionId}");
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        Console.WriteLine("HubConnection was already disposed when trying to leave session");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error leaving session: {ex.Message}");
+                    }
+                }
+
+                try
+                {
+                    if (_hubConnection.State != HubConnectionState.Disconnected)
+                    {
+                        await _hubConnection.StopAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error stopping connection: {ex.Message}");
+                }
+                finally
+                {
+                    await _hubConnection.DisposeAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error disposing hub connection: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task CopySessionLink()
+    {
+        try
+        {
+            var url = Navigation.Uri;
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", url);
+            await JSRuntime.InvokeVoidAsync("showToast", "Session link copied to clipboard!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error copying link: {ex.Message}");
+        }
+    }
+
+    private async Task LeaveSession()
+    {
+        if (_hubConnection is not null && _isConnected)
+        {
+            await _hubConnection.SendAsync("LeaveSession", SessionId);
+        }
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("sessionManager.clearActiveSession");
+            await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "currentSessionId");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in LeaveSession: {ex.Message}");
+        }
+
+        Navigation.NavigateTo("/");
+    }
+
+    private async Task EndSession()
+    {
+        _sessionEnded = true;
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("sessionManager.clearActiveSession");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error clearing active session: {ex.Message}");
+        }
+
+        if (_hubConnection is not null && _isConnected)
+        {
+            try
+            {
+                string message = $"Session ended by you";
+                if (_sessionEndedModal != null)
+                {
+                    string sessionIdToCleanup = SessionId ?? "";
+                    _sessionEndedModal.Show(message);
+                    await JSRuntime.InvokeVoidAsync("clearPreviousSessionData");
+                    await _hubConnection.SendAsync("EndSessionForAll", sessionIdToCleanup, _userName);
+                    return;
+                }
+
+                await _hubConnection.SendAsync("EndSessionForAll", SessionId, _userName);
+
+                await JSRuntime.InvokeVoidAsync("clearPreviousSessionData");
+                Navigation.NavigateTo("/");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error ending session: {ex.Message}");
+                Navigation.NavigateTo("/");
+            }
+        }
+        else
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private async Task StartEstimationGame()
+    {
+        if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
+            return;
+
+        try
+        {
+            _gameRunning = true;
+            await _hubConnection.SendAsync("StartEstimationGame", SessionId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error starting estimation game: {ex.Message}");
+        }
+    }
+
+    private async Task EndEstimationGame()
+    {
+        _gameRunning = false;
+        
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("gameStateManager.clearState", SessionId);
+            Console.WriteLine("Game state cleared");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error clearing game state: {ex.Message}");
+        }
+        
+        await InvokeAsync(() => {
+            StateHasChanged();
+            return Task.CompletedTask;
+        });
+    }
+
+    private async Task HandleUserVoted(string userName)
+    {
+        // Force an update to ensure vote changes are reflected
+        if (_estimationGame != null)
+        {
+            Console.WriteLine($"Vote handled for {userName}");
+            await InvokeAsync(() => {
+                StateHasChanged();
+                return Task.CompletedTask;
+            });
+        }
+    }
+}

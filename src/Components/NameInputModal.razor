@@ -1,0 +1,231 @@
+@namespace PocketStoryPoker.Components
+@inject IJSRuntime JSRuntime
+
+<div class="modal @(_isVisible ? "modal-visible" : "")" id="nameInputModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 style="width: 100%; text-align: center;">@Title</h3>
+        </div>
+        <div class="modal-body" style="text-align: left;">
+            <p class="message-text mb-2" style="margin-bottom: 1rem;">@Message</p>
+            <div class="form-group">
+                <input type="text" class="form-control" id="userName" @bind-value="_userName"
+                    @bind-value:event="oninput" maxlength="20" placeholder="Your name (3-20 characters)"
+                    @onkeypress="HandleKeyPress" @ref="_inputElement" autofocus />
+
+                <small class="text-info d-block" style="margin-top: 0.5rem;">Name must start with a letter and contain
+                    only letters and spaces.</small>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <small class="text-danger d-block" style="margin-top: 0.5rem;">@_errorMessage</small>
+                }
+            </div>
+        </div>
+        <div class="modal-footer">
+            @if (IsChangeMode)
+            {
+                <button type="button" class="btn btn-secondary" @onclick="Close">Cancel</button>
+                <button type="button" class="btn btn-primary" @onclick="SaveName">Continue</button>
+            }
+            else
+            {
+                <button type="button" class="btn btn-primary" @onclick="SaveName">Continue</button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _isVisible = false;
+    private string _userName = "";
+    private string _errorMessage = "";
+    private ElementReference _inputElement;
+
+    [Parameter] public EventCallback<string> OnNameSet { get; set; }
+    [Parameter] public bool IsChangeMode { get; set; } = false;
+
+    // Text content that changes based on mode
+    private string Title => IsChangeMode ? "Change Your Name" : "Welcome to Pocket Story Poker!";
+    private string Message => IsChangeMode ? "Enter your new name below:" : "Please enter your name to get started";
+
+    // Keep track of original name for validation purposes
+    private string _originalNameBeforeEdit = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // For change mode, get existing username; for welcome mode, leave blank
+        if (IsChangeMode)
+        {
+            try
+            {
+                var existingName = await JSRuntime.InvokeAsync<string>("userManager.getUserName");
+                if (!string.IsNullOrEmpty(existingName))
+                {
+                    _userName = existingName;
+                    _originalNameBeforeEdit = existingName;
+                }
+            }
+            catch (Exception)
+            {
+                // Ignore errors in initialization
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_isVisible)
+        {
+            // Focus the input element when the modal is shown
+            await JSRuntime.InvokeVoidAsync("focusElement", _inputElement);
+        }
+    }
+
+    public void Show()
+    {
+        _isVisible = true;
+        _errorMessage = "";
+
+        // Always re-fetch the current name from localStorage when showing the modal
+        if (IsChangeMode)
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    var currentName = await JSRuntime.InvokeAsync<string>("userManager.getUserName");
+                    if (!string.IsNullOrEmpty(currentName))
+                    {
+                        _userName = currentName;
+                        _originalNameBeforeEdit = currentName;
+                        StateHasChanged();
+                    }
+                }
+                catch
+                {
+                    // Ignore errors
+                }
+            });
+        }
+        else
+        {
+            // For welcome mode, start with empty name
+            _userName = "";
+            _originalNameBeforeEdit = "";
+        }
+
+        StateHasChanged();
+    }
+
+    public void SetName(string name)
+    {
+        _userName = name;
+        _originalNameBeforeEdit = name;
+        _errorMessage = "";
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        _isVisible = false;
+        // Restore original name if cancelling
+        if (IsChangeMode)
+        {
+            _userName = _originalNameBeforeEdit;
+        }
+        StateHasChanged();
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SaveName();
+        }
+    }
+
+    private async Task SaveName()
+    {
+        _errorMessage = ""; // Clear previous error message
+
+        // Format the name - trim and replace multiple spaces with one
+        _userName = NormalizeName(_userName);
+
+        // Validate the name
+        string validationError = ValidateName(_userName);
+        if (!string.IsNullOrEmpty(validationError))
+        {
+            _errorMessage = validationError;
+            StateHasChanged();
+            return;
+        }
+
+        // Only proceed if validation passes
+
+        // Save to localStorage using the userManager
+        await JSRuntime.InvokeVoidAsync("userManager.saveUserName", _userName);
+
+        // Update original name
+        _originalNameBeforeEdit = _userName;
+
+        // Close the modal
+        _isVisible = false;
+
+        // Notify parent component
+        await OnNameSet.InvokeAsync(_userName);
+
+        StateHasChanged();
+    }
+
+    private string NormalizeName(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return string.Empty;
+
+        // Trim leading and trailing spaces
+        name = name.Trim();
+
+        // Use regex to replace multiple spaces with a single space
+        name = System.Text.RegularExpressions.Regex.Replace(name, @"\s{2,}", " ");
+
+        return name;
+    }
+
+    private string ValidateName(string name)
+    {
+        // Check if name is empty after normalization
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return "Please enter your name";
+        }
+
+        // Check length
+        if (name.Length < 3)
+        {
+            return "Name must be at least 3 characters";
+        }
+
+        if (name.Length > 20)
+        {
+            return "Name cannot exceed 20 characters";
+        }
+
+        // Check if name starts with letter using regex
+        // Match any letter including those with diacritics
+        if (!System.Text.RegularExpressions.Regex.IsMatch(name[0].ToString(), @"^\p{L}"))
+        {
+            return "Name must start with a letter";
+        }
+
+        // Check if name contains only letters and spaces
+        if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[\p{L}\s]+$"))
+        {
+            return "Name can only contain letters and spaces";
+        }
+
+        // All validation passed
+        return string.Empty;
+    }
+}
+                        

@@ -1,0 +1,357 @@
+@namespace PocketStoryPoker.Components
+@using Microsoft.AspNetCore.SignalR.Client
+@inject IJSRuntime JSRuntime
+
+<div class="estimation-game">
+    @if (_gameStage == GameStage.Selecting)
+    {
+        <div class="game-cards">
+            <div class="card-grid @(_selectedValue != null ? "has-selection" : "")">
+                @{ var row = 0; }
+                @while (row < 2)
+                {
+                    <div class="card-row">
+                        @for (var col = 0; col < 3; col++)
+                        {
+                            var index = row * 3 + col;
+                            var value = _cardValues[index];
+                            <PlayingCard 
+                                Value="@value.ToString()" 
+                                Selected="@(IsCardSelected(value))" 
+                                OnClick="@(val => SelectCard(int.Parse(val)))" />
+                        }
+                    </div>
+                    row++;
+                }
+            </div>
+        </div>
+        <div class="game-controls">
+            <button class="btn btn-primary" @onclick="ShowResults">Show Results</button>
+        </div>
+    }
+    else if (_gameStage == GameStage.Results && _hasGameOccurred)
+    {
+        <div class="results-view">
+            <h3>Results Summary</h3>
+            <div class="results-statistics">
+                <div class="stat-item recommended">
+                    <div class="stat-label">Recommended</div>
+                    <div class="stat-value">@_recommended</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Median</div>
+                    <div class="stat-value">@_median</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Average</div>
+                    <div class="stat-value">@_average.ToString("F1")</div>
+                </div>
+            </div>
+            <h3>Vote Distribution</h3>
+            <div class="vote-distribution">
+                <div class="vote-cards">
+                @foreach (var kvp in _voteCounts.OrderBy(kvp => int.Parse(kvp.Key)))
+                    {
+                        <div class="vote-card-container @(kvp.Value == 0 ? "dimmed" : "")">
+                            <div class="vote-count-badge">@kvp.Value</div>
+                            <PlayingCard Value="@kvp.Key" Selected="false" Small="true" />
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="game-controls empty-session-message">
+                <div class="empty-icon">♠ ♥ ♦ ♣</div>
+                <button class="btn btn-primary" @onclick="StartGame">Start New Game</button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="game-controls empty-session-message">
+            <div class="empty-icon">♠ ♥ ♦ ♣</div>
+            <button class="btn btn-primary" @onclick="StartGame">Start New Game</button>
+        </div>
+    }
+</div>
+
+@code {
+    enum GameStage { Selecting, Results }
+    private GameStage _gameStage = GameStage.Results;
+
+    private int[] _cardValues = new int[] { 1, 2, 3, 5, 8, 13 };
+    private string? _selectedValue;
+    private Dictionary<string, string> _participantVotes = new Dictionary<string, string>();
+    private Dictionary<string, int> _voteCounts = new Dictionary<string, int>();
+
+    // Track if any game has occurred in this session
+    private bool _hasGameOccurred = false;
+
+    // Results fields
+    private string _mostCommon = "-";
+    private string _median = "-";
+    private double _average = 0;
+    private string _recommended = "-";
+
+    [Parameter] public string SessionId { get; set; } = "";
+    [Parameter] public string UserName { get; set; } = "";
+    [Parameter] public HubConnection? HubConnection { get; set; }
+    [Parameter] public EventCallback OnGameEnded { get; set; }
+    [Parameter] public EventCallback<string> OnUserVoted { get; set; }
+
+    // Expose read-only properties for parent component
+    public bool IsShowingResults => _gameStage == GameStage.Results;
+    public Dictionary<string, string> ParticipantVotes => _participantVotes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("EstimationGame initializing...");
+        if (HubConnection != null)
+        {
+            try
+            {
+                // Check if there's an active game and get its state
+                var gameState = await HubConnection.InvokeAsync<string>("GetCurrentGameState", SessionId);
+                
+                Console.WriteLine($"Game state: {gameState}");
+
+                // Set _hasGameOccurred based on whether there's an active game
+                _hasGameOccurred = (gameState == "SHOWING_RESULTS" || gameState == "SELECTING");
+                
+                if (_hasGameOccurred)
+                {
+                    Console.WriteLine("Game has occurred, getting votes...");
+                    // Get current votes
+                    var votes = await HubConnection.InvokeAsync<Dictionary<string, string>>("GetCurrentVotes", SessionId);
+                    _participantVotes = votes;
+
+                    // Set the correct stage
+                    if (gameState == "SHOWING_RESULTS")
+                    {
+                        Console.WriteLine($"Showing results, current votes: {string.Join(", ", _participantVotes.Select(v => $"{v.Key}={v.Value}"))}");
+                        _gameStage = GameStage.Results;
+                        CalculateResults();
+                    }
+                    else if (gameState == "SELECTING")
+                    {
+                        Console.WriteLine("In selecting stage");
+                        _gameStage = GameStage.Selecting;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting initial game state: {ex.Message}");
+            }
+
+            // When a new game starts, all participants switch to the selecting stage
+            HubConnection.On("GameStarted", () =>
+            {
+                _gameStage = GameStage.Selecting;
+                _selectedValue = null;
+                _participantVotes.Clear();
+                _voteCounts.Clear();
+                _hasGameOccurred = true;
+                InvokeAsync(StateHasChanged);
+            });
+            
+            // When a vote is submitted by any participant
+            HubConnection.On<string, string>("VoteSubmitted", (user, value) =>
+            {
+                Console.WriteLine($"Vote submitted: {user} -> {value}");
+                _participantVotes[user] = value;
+                InvokeAsync(StateHasChanged);
+            });
+
+            // When a participant's status is updated
+            HubConnection.On<Participant>("ParticipantUpdated", (participant) =>
+            {
+                InvokeAsync(StateHasChanged);
+            });
+
+            // When results are to be shown
+            HubConnection.On("ShowResults", async () =>
+            {
+                try
+                {
+                    // Reload the votes to ensure we have the latest state
+                    var currentVotes = await HubConnection.InvokeAsync<Dictionary<string, string>>("GetCurrentVotes", SessionId);
+                    _participantVotes = currentVotes;
+
+                    Console.WriteLine("ShowResults received, current state:");
+                    Console.WriteLine($"Votes: {string.Join(", ", _participantVotes.Select(v => $"{v.Key}={v.Value}"))}");
+
+                    _gameStage = GameStage.Results;
+                    CalculateResults();
+
+                    // Force parent and child components to update
+                    await InvokeAsync(() =>
+                    {
+                        StateHasChanged();
+                        if (OnGameEnded.HasDelegate)
+                        {
+                            OnGameEnded.InvokeAsync();
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error showing results: {ex.Message}");
+                }
+            });
+        }
+    }
+
+    private bool IsCardSelected(int value)
+    {
+        return _selectedValue == value.ToString();
+    }
+
+    private async Task SelectCard(int value)
+    {
+        Console.WriteLine($"Selecting card: {value}");
+        var valueStr = value.ToString();
+        if (_selectedValue == valueStr)
+            return;
+
+        _selectedValue = valueStr;
+        _participantVotes[UserName] = valueStr;
+
+        // Notify the parent component
+        if (OnUserVoted.HasDelegate)
+        {
+            await OnUserVoted.InvokeAsync(valueStr);
+        }
+
+        // Submit vote through the hub
+        if (HubConnection != null && HubConnection.State == HubConnectionState.Connected)
+        {
+            try
+            {
+                // This will trigger participant status update via the hub
+                await HubConnection.SendAsync("SubmitVote", SessionId, UserName, valueStr);
+                
+                // Find and update the local participant's vote status
+                var participant = _participantVotes.Keys.FirstOrDefault(k => k.Equals(UserName, StringComparison.OrdinalIgnoreCase));
+                if (participant != null)
+                {
+                    _participantVotes[participant] = valueStr;
+                    StateHasChanged();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error submitting vote: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task StartGame()
+    {
+        if (HubConnection != null && HubConnection.State == HubConnectionState.Connected)
+        {
+            try
+            {
+                _selectedValue = null;
+                _participantVotes.Clear();
+                _voteCounts.Clear();
+                _mostCommon = "-";
+                _median = "-";
+                _average = 0;
+                _recommended = "-";
+                await HubConnection.SendAsync("StartEstimationGame", SessionId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error starting game: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task ShowResults()
+    {
+        if (HubConnection != null && HubConnection.State == HubConnectionState.Connected)
+        {
+            try
+            {
+                await HubConnection.SendAsync("ShowResults", SessionId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error showing results: {ex.Message}");
+            }
+        }
+    }
+
+    private void CalculateResults()
+    {
+        // Count votes for each card value
+        _voteCounts = _participantVotes.Values
+            .GroupBy(v => v)
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        // Ensure all card values are represented
+        foreach (var val in _cardValues)
+        {
+            var key = val.ToString();
+            if (!_voteCounts.ContainsKey(key))
+                _voteCounts[key] = 0;
+        }
+
+        if (_participantVotes.Count == 0)
+            return;
+
+        // Most common value
+        _mostCommon = _voteCounts.OrderByDescending(kvp => kvp.Value)
+                                 .ThenBy(kvp => int.Parse(kvp.Key))
+                                 .First().Key;
+
+        // Calculate median and average using only the votes
+        var selectedNumbers = _participantVotes.Values.Select(v => int.Parse(v)).OrderBy(v => v).ToList();
+        if (selectedNumbers.Count > 0)
+        {
+            int count = selectedNumbers.Count;
+            if (count % 2 == 0)
+            {
+                _median = ((selectedNumbers[count / 2 - 1] + selectedNumbers[count / 2]) / 2.0).ToString();
+            }
+            else
+            {
+                _median = selectedNumbers[count / 2].ToString();
+            }
+            _average = selectedNumbers.Average();
+        }
+
+        int totalVotes = _participantVotes.Count;
+        // Rule 1: if any value reached at least 66% of the votes, choose that
+        var candidate = _voteCounts.FirstOrDefault(kvp => (double)kvp.Value / totalVotes >= 0.66);
+        if (!string.IsNullOrEmpty(candidate.Key))
+        {
+            _recommended = candidate.Key;
+            return;
+        }
+
+        // Rule 2: if two sequential values are tied and together have >=66%
+        var grouped = _voteCounts.Where(kvp => kvp.Value > 0)
+                                 .OrderBy(kvp => int.Parse(kvp.Key))
+                                 .ToList();
+        for (int i = 0; i < grouped.Count - 1; i++)
+        {
+            if (grouped[i].Value == grouped[i + 1].Value &&
+                ((double)(grouped[i].Value + grouped[i + 1].Value) / totalVotes) >= 0.66 &&
+                int.Parse(grouped[i + 1].Key) - int.Parse(grouped[i].Key) == 1)
+            {
+                _recommended = grouped[i + 1].Key;
+                return;
+            }
+        }
+
+        // Rule 3: otherwise choose the highest card value that is closest to the median
+        double medianValue = double.Parse(_median);
+        _recommended = _cardValues
+            .Select(v => new { v, diff = Math.Abs(v - medianValue) })
+            .OrderBy(x => x.diff)
+            .ThenByDescending(x => x.v)
+            .First().v.ToString();
+    }
+}

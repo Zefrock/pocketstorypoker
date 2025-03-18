@@ -1,0 +1,521 @@
+/* Poker-themed home page styling */
+
+/* Reset body and html to prevent scrolling */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100%;
+}
+
+/* Main container that uses the full viewport */
+.poker-home {
+  position: relative;
+  width: 100%; /* Changed from 100vw to prevent horizontal scrollbar */
+  height: calc(100vh - 60px); /* Account for header */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  background: #1e824c; /* Brighter poker felt green */
+  background-image: 
+    /* Subtle noise texture */ url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADQLyYwAAAAE3RSTlMAGAIEEAwgDCIkFCYoHBosKB4QPCznZgAABGlJREFUeNrFmleC2zAMRKkiN9nS1t3/VHFTh4YlP382D56AID3MkCJA4EShVERQVS09i1J+3jBKSZBdZ6VE8gsShVIEWB1yj501gZPhMrK02HpiWZlsK5IdDiKVTBERdMCJSIoYx9dKLfcYScswIonIRppkFRGMBImEJCIZ3WZywK12E30KK2g7IBsRte1S/MIOaNtYJXS7pDjYiUSgHZCElA4wYRESiRb4VPyDiGBkEypImk9K63MmkyBFi/MmektNwn6TMe51c0JCunYKiZMSZqZ0PZihZJIGZkLe5wZShJBKPkZMJZoMbkKaQa3LTW6wpHQTgOvkl0nCHjFp1oUDiVabZCdBIElQJEWyH0gWBAEVxZUTimKhKUlRI3EghZNdiqQkyUOKZEBJFPxICnyMFCXHIC9JNiQnobKq/yQyzwgdJLmYrCpP6IuS3OalK52QkOYkPCXdT17qZxJSn0TopxCMp+T7ydt9rrxmXiqdk2RcvsRl8tKn5AU+N+GHyWvzVvrE5iXlNpNb3m6ZdP1Mcrsm77tNLikcySzRsl1LfT5HBMaKSIGldxGNVP/VnB0RDgN/FLFOh1kHRXEaYqTfBkXP1ViXHB2RFdXZ1OsyXlOSDhNKpNLckeqQ+3R2RFszJ60D0sSVt1S7CTr7lPh76fOULF7mwx+OyDJHPnzWMfmM5dOlPWLqvdJ5i0j1o4hLMv9J9D59TxL5kKR+JPmm8Yq+hbxBFP1H90t2fSuekiBfQrgk01EyK35HYuxcJA41Xsuk+/yeZE+SxiSJX5Kcj0l/Jmz6bfKSzQvTAZK4l0T/SpLZVjmJzaNkbI6QbpLkfKNI3K6xPEh6TzP5OYzE91ZV7igZmwYRN4t7SeZWyTieKK6XP5Qey9549VM7SeKPkiz+luQsFWeor0iG5Ksma72p70j+U5Ljjf5SXEeNRCp6JyLhvSSJQZS0l0Qe7UW08XZ6SBLfkvQaJeklyXzWqDQk8iBJ7PPkvOrz/0YyP28hSn3Z5/7u5uh3JeX6/rDMGyRRnp43oeQtJDfx0RSflcTibfEseaPktBjkPm9VnIW0t5DcVC7v/OquEdPn3SQ23pz/1kxe62yucIPkb0if8lAjJ1nbyJrOid9q6cJWK2F7T7YJ/2SbW1czpCg66Jzs657xaqHrZIaNPQp1fcLs9mT5QXLXHTMfc8h9BLnZln2ufK58jZRhuWR85TP/dObFxL0ec9+SeBJycjfmcjZLP0KOTpejV+XoC/TRVznDIc+Ei3Mxw4+Ev9atOF6OBT2tyxmOFc7oDsecp3PO9h3zn87c6fSj41jxHbkl7J2N5RYcAdKdB0KOLGJHVrIj89mRQe3I5nZkhTuZOu7IzndkGjyy2R3ZD4+Mj0cWzCND6JE19sjke2RbPjJSH1m8jyzoRxb5IwtR8a8F5siieGSJvJGF+uwSe+1S3LC2RPu/iLXeWZTm5cLDuxjxL+bNPyx//8pprJH+AIjC0CFxKIhCAAAAAElFTkSuQmCC"),
+    /* Darker noise for depth */
+      url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAMAAABHPGVmAAAAPFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADQLyYwAAAAE3RSTlMAGAIEEAwgDCIkFCYoHBosKB4QPCznZgAABGlJREFUeNrFmleC2zAMRKkiN9nS1t3/VHFTh4YlP382D56AID3MkCJA4EShVERQVS09i1J+3jBKSZBdZ6VE8gsShVIEWB1yj501gZPhMrK02HpiWZlsK5IdDiKVTBERdMCJSIoYx9dKLfcYScswIonIRppkFRGMBImEJCIZ3WZywK12E30KK2g7IBsRte1S/MIOaNtYJXS7pDjYiUSgHZCElA4wYRESiRb4VPyDiGBkEypImk9K63MmkyBFi/MmektNwn6TMe51c0JCunYKiZMSZqZ0PZihZJIGZkLe5wZShJBKPkZMJZoMbkKaQa3LTW6wpHQTgOvkl0nCHjFp1oUDiVabZCdBIElQJEWyH0gWBAEVxZUTimKhKUlRI3EghZNdiqQkyUOKZEBJFPxICnyMFCXHIC9JNiQnobKq/yQyzwgdJLmYrCpP6IuS3OalK52QkOYkPCXdT17qZxJSn0TopxCMp+T7ydt9rrxmXiqdk2RcvsRl8tKn5AU+N+GHyWvzVvrE5iXlNpNb3m6ZdP1Mcrsm77tNLikcySzRsl1LfT5HBMaKSIGldxGNVP/VnB0RDgN/FLFOh1kHRXEaYqTfBkXP1ViXHB2RFdXZ1OsyXlOSDhNKpNLckeqQ+3R2RFszJ60D0sSVt1S7CTr7lPh76fOULF7mwx+OyDJHPnzWMfmM5dOlPWLqvdJ5i0j1o4hLMv9J9D59TxL5kKR+JPmm8Yq+hbxBFP1H90t2fSuekiBfQrgk01EyK35HYuxcJA41Xsuk+/yeZE+SxiSJX5Kcj0l/Jmz6bfKSzQvTAZK4l0T/SpLZVjmJzaNkbI6QbpLkfKNI3K6xPEh6TzP5OYzE91ZV7igZmwYRN4t7SeZWyTieKK6XP5Qey9549VM7SeKPkiz+luQsFWeor0iG5Ksma72p70j+U5Ljjf5SXEeNRCp6JyLhvSSJQZS0l0Qe7UW08XZ6SBLfkvQaJeklyXzWqDQk8iBJ7PPkvOrz/0YyP28hSn3Z5/7u5uh3JeX6/rDMGyRRnp43oeQtJDfx0RSflcTibfEseaPktBjkPm9VnIW0t5DcVC7v/OquEdPn3SQ23pz/1kxe62yucIPkb0if8lAjJ1nbyJrOid9q6cJWK2F7T7YJ/2SbW1czpCg66Jzs657xaqHrZIaNPQp1fcLs9mT5QXLXHTMfc8h9BLnZln2ufK58jZRhuWR85TP/dObFxL0ec9+SeBJycjfmcjZLP0KOTpejV+XoC/TRVznDIc+Ei3Mxw4+Ev9atOF6OBT2tyxmOFc7oDsecp3PO9h3zn87c6fSj41jxHbkl7J2N5RYcAdKdB0KOLGJHVrIj89mRQe3I5nZkhTuZOu7IzndkGjyy2R3ZD4+Mj0cWzCND6JE19sjke2RbPjJSH1m8jyzoRxb5IwtR8a8F5siieGSJvJGF+uwSe+1S3LC2RPu/iLXeWZTm5cLDuxjxL+bNPyx//8pprJH+AIjC0CFxKIhCAAAAAElFTkSuQmCC"),
+    /* Main radial gradient */ radial-gradient(circle, #27ae60 0%, #196f3d 100%); /* Brighter green gradient */
+
+  background-blend-mode: overlay, overlay, normal;
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.5);
+}
+
+/* Felt texture overlay */
+.poker-home::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%231e824c' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+  opacity: 1;
+  pointer-events: none;
+}
+
+/* Add table edge styling */
+.poker-home::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: none; /* Remove brown border */
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.4); /* Just keep inner shadow */
+  border-radius: 0; /* Remove border radius */
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Logo area at top */
+.poker-logo {
+  margin-bottom: 2rem; /* Increased from 1rem */
+  z-index: 1;
+}
+
+.poker-logo h1 {
+  display: none; /* Hide the Planning Poker title */
+}
+
+.poker-logo p {
+  color: #f1c40f; /* Gold */
+  font-size: 1.6rem; /* Increased from 1.2rem to 1.6rem */
+  max-width: 800px; /* Increased max-width for better line breaks */
+  margin: 0 auto 1.5rem; /* Added bottom margin */
+  font-weight: 600; /* Made slightly bolder */
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8), 0 0 12px rgba(0, 0, 0, 0.6);
+  line-height: 1.4; /* Added line height for better readability */
+  text-align: center; /* Ensure text is centered */
+  padding: 0 1rem; /* Add some padding on small screens */
+  position: relative;
+  z-index: 2;
+}
+
+/* Card layouts - reimagined as actual poker cards */
+.poker-cards {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin-top: 1rem; /* Reduced from 2rem */
+  z-index: 2; /* Ensure cards are above the felt texture */
+}
+
+/* Fix for card content overflow issue */
+
+/* Card layouts - adjust for overflow */
+.poker-card {
+  position: relative;
+  background-color: #fff;
+  width: 320px; /* Increased from 260px */
+  height: 260px; /* Reduced from 300px to make cards more compact */
+  border-radius: 12px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.2);
+  transition: box-shadow 0.3s ease; /* Only transition the shadow */
+  overflow: hidden; /* Ensure nothing breaks outside the card */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  box-sizing: border-box; /* Include padding in width calculation */
+  transform: none !important; /* Prevent any transforms on the card itself */
+}
+
+.poker-card:hover {
+  transform: none !important; /* Override any transforms */
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5); /* Just enhance shadow on hover */
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0.9rem 1.2rem; /* Slightly increased from 0.8rem but less than 1.2rem */
+  box-sizing: border-box;
+  overflow: hidden; /* Add overflow hidden here as well */
+}
+
+/* Card corner embellishments */
+.card-corner {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+}
+
+.corner-tl {
+  top: 10px;
+  left: 10px;
+  border-top: 3px solid #f1c40f;
+  border-left: 3px solid #f1c40f;
+  border-radius: 5px 0 0 0;
+}
+
+.corner-tr {
+  top: 10px;
+  right: 10px;
+  border-top: 3px solid #f1c40f;
+  border-right: 3px solid #f1c40f;
+  border-radius: 0 5px 0 0;
+}
+
+.corner-bl {
+  bottom: 10px;
+  left: 10px;
+  border-bottom: 3px solid #f1c40f;
+  border-left: 3px solid #f1c40f;
+  border-radius: 0 0 0 5px;
+}
+
+.corner-br {
+  bottom: 10px;
+  right: 10px;
+  border-bottom: 3px solid #f1c40f;
+  border-right: 3px solid #f1c40f;
+  border-radius: 0 0 5px 0;
+}
+
+/* Card icon */
+.card-icon {
+  font-size: 2.5rem; /* Slightly smaller size */
+  margin-bottom: 0; /* Remove bottom margin */
+  flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+.create-card .card-icon {
+  color: #f1c40f; /* Gold */
+}
+
+.join-card .card-icon {
+  color: #000; /* Black */
+}
+
+/* Card content */
+.card-title {
+  font-size: 1.6rem; /* Reduced from 1.8rem */
+  font-weight: 700;
+  margin: 0.75rem 0; /* Equal margins top and bottom */
+  text-align: center; /* Center the title since no icon */
+  color: #000;
+  max-width: 100%; /* Ensure title doesn't overflow */
+  word-wrap: break-word; /* Allow wrapping for long titles */
+  padding: 0;
+  margin-top: 0.15rem; /* Reduced from 0.25rem */
+  margin-bottom: 0.5rem; /* Reduced from 0.75rem */
+}
+
+.card-text {
+  font-size: 0.95rem; /* Reduced from 1rem */
+  color: #555;
+  margin-top: 0;
+  margin-bottom: 1rem; /* Reduced from 2rem to halve the space */
+  max-width: 100%; /* Ensure text doesn't overflow */
+  word-wrap: break-word; /* Allow wrapping for longer text */
+  text-align: center; /* Add this to center the text */
+  width: 100%; /* Ensure full width */
+  margin-left: auto; /* Center horizontally */
+  margin-right: auto;
+}
+
+/* Unified card-actions styling (merging previous .join-form styles) */
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Adjust gap as needed */
+  width: 100%;
+  align-items: center;
+  padding: 0;
+  position: relative;
+  margin-top: auto;
+  z-index: 10;
+}
+
+/* Ensure inputs and buttons inside card-actions are full width */
+.card-actions input,
+.card-actions button {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Buttons */
+.btn-gold,
+.btn-dark {
+  border-radius: 6px; /* Much less round than 30px */
+  padding: 0.8rem 1.2rem; /* Adjusted padding */
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2); /* Subtler shadow */
+  margin: 0; /* Remove default margin */
+  transition: all 0.2s ease; /* Faster transition */
+  width: calc(100% - 30px); /* Slightly narrower to create margin */
+  max-width: 220px; /* Prevent buttons from getting too wide */
+  margin-left: auto; /* Auto margins for horizontal centering */
+  margin-right: auto;
+  text-align: center;
+  position: relative;
+  overflow: visible !important; /* Force visibility for hover effects */
+  z-index: 10; /* Ensure buttons are on top for hover effects */
+  transform: translateY(0); /* Start without transformation */
+  padding-right: 1.2rem; /* Reset to normal padding without extra space */
+  font-weight: 600; /* Add consistent font weight */
+  font-size: 1rem; /* Add consistent font size */
+  letter-spacing: 0.5px; /* Add subtle letter spacing */
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><text y='20' font-size='20' fill='black'>♣</text></svg>"),
+    auto;
+}
+
+.btn-gold:hover,
+.btn-dark:hover {
+  transform: translateY(-2px); /* Keep the subtle lift effect */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+  padding-right: 1.2rem; /* Keep padding consistent on hover */
+}
+
+.btn-dark {
+  background: #2c3e50;
+  color: #fff;
+  border: none;
+  margin-top: 8px; /* Keep this specific spacing */
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><text y='20' font-size='20' fill='white'>♣</text></svg>"),
+    auto;
+}
+
+/* Remove club symbol hover effect */
+
+/* Remove club icon from buttons */
+.btn-gold::after,
+.btn-dark::after {
+  content: none !important; /* Remove the club symbol completely */
+}
+
+.btn-gold:hover::after,
+.btn-dark:hover::after {
+  content: none !important; /* Ensure it's not shown on hover */
+  opacity: 0; /* Keep it invisible */
+}
+
+/* Remove the animation defined for the icon */
+@keyframes fadeIn {
+  /* Keep for compatibility but won't be used */
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Override any global button hover styles */
+button:hover::after,
+.btn:hover::after {
+  content: none !important;
+}
+
+/* Join form */
+.join-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 12px; /* Slightly increase gap between input and button */
+  margin-top: 0; /* Remove automatic margin pushing to bottom */
+  margin-bottom: 1rem; /* Consistent bottom margin */
+  max-width: 100%; /* Ensure the form doesn't overflow */
+  padding: 0; /* Remove existing padding */
+  align-items: center; /* Center contents horizontally */
+  position: relative; /* Change from absolute to relative positioning */
+  bottom: auto; /* Remove absolute positioning */
+  margin-top: auto; /* Push to bottom of flex container */
+  z-index: 10;
+}
+
+/* Update to join input styling */
+.join-input {
+  background: #121212; /* Change to black background */
+  color: #f1c40f; /* Change text to gold */
+  border: 1px solid #2c2c2c; /* Thinner border */
+  border-radius: 6px; /* Match button border-radius */
+  padding: 0.8rem 1rem;
+  margin-left: 10px; /* Add left margin */
+  margin-right: 10px; /* Add right margin */
+  width: calc(100% - 30px); /* Match button width */
+  max-width: 220px; /* Prevent input from getting too wide */
+  min-width: 120px; /* Prevent input from getting too wide */
+  font-size: 0.9rem; /* Smaller font size to fit text better */
+  outline: none;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  text-align: center;
+  letter-spacing: 1px; /* Reduced letter spacing */
+  box-sizing: border-box;
+  font-weight: 600; /* Make text slightly bolder */
+  caret-color: #f1c40f; /* Cursor color */
+  cursor: text;
+}
+
+.join-input::placeholder {
+  color: rgba(241, 196, 15, 0.5); /* Gold with transparency for placeholder */
+  font-weight: normal;
+}
+
+.join-input:focus {
+  border-color: #f1c40f;
+  box-shadow: 0 0 0 2px rgba(241, 196, 15, 0.2);
+}
+
+/* Card symbols as background */
+.card-symbols {
+  display: none; /* Hide the watermarks */
+}
+
+/* Remove spacer that was used for watermarks */
+.flex-spacer {
+  display: none;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .poker-cards {
+    flex-direction: column;
+    gap: 1.5rem; /* Reduced from 2rem */
+  }
+
+  .poker-card {
+    width: 280px; /* Slightly narrower on mobile but still wider than before */
+    height: 280px; /* Even smaller on mobile */
+  }
+
+  .poker-logo h1 {
+    font-size: 2.2rem; /* Further reduced for mobile */
+  }
+
+  .poker-logo p {
+    font-size: 1.4rem; /* Slightly smaller on mobile but still larger than before */
+    padding: 0 1.5rem; /* Additional side padding to prevent text from touching edges */
+  }
+}
+
+@media (max-width: 480px) {
+  .poker-logo p {
+    font-size: 1.2rem; /* Even smaller on very small screens */
+  }
+}
+
+/* Even more compact for smaller screens */
+@media (max-height: 700px) {
+  .poker-logo h1 {
+    font-size: 2.8rem;
+  }
+
+  .poker-logo p {
+    font-size: 1rem;
+  }
+
+  .poker-card {
+    width: 240px;
+    height: 330px;
+  }
+
+  .card-inner {
+    padding: 1.25rem;
+  }
+
+  .card-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-title {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-text {
+    margin-bottom: 1rem;
+  }
+
+  .btn-gold,
+  .btn-dark {
+    padding: 0.6rem 1.2rem;
+  }
+}
+
+/* Animation for cards */
+@keyframes cardDeal {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) rotateY(20deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateY(0);
+  }
+}
+
+.create-card {
+  animation: cardDeal 0.6s ease-out;
+}
+
+.join-card {
+  animation: cardDeal 0.6s ease-out 0.2s;
+  animation-fill-mode: both;
+}
+
+/* Card content layout adjustments */
+
+/* Header section with icon and title side-by-side */
+.card-header-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0; /* Remove top margin */
+  margin-bottom: 0.75rem; /* Keep bottom margin */
+  padding-top: 0; /* Remove top padding */
+  width: 100%;
+  margin-top: 0.25rem; /* Reduced from 0.5rem */
+  padding-top: 0.2rem; /* Reduced from 0.5rem */
+}
+
+/* Adjust card content layout */
+.card-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: calc(100% - 20px); /* Give space for padding */
+  justify-content: space-between; /* Space content properly */
+  padding: 0; /* Remove vertical padding */
+  align-items: center; /* Center everything horizontally */
+  padding-top: 0.25rem; /* Reduced from 0.5rem */
+}
+
+/* Add spacer and ensure consistent button positioning */
+
+/* Add a flexible spacer to push buttons to the bottom consistently */
+.flex-spacer {
+  flex: 0.5; /* Reduce flex value to be just enough for spacing */
+  min-height: 10px; /* Minimum height to ensure some spacing */
+}
+
+/* Text width control */
+.card-title,
+.card-text {
+  width: 90%; /* Control width of text elements */
+  max-width: 100%;
+  text-align: center;
+}
+
+/* Disable the general hover rule for all buttons in cards */
+.poker-card button:not(.btn-gold, .btn-dark):hover {
+  padding-right: initial; /* Reset the padding change */
+}
+
+/* Specific color for gold button */
+.btn-gold {
+  background: #f1c40f;
+  color: #000;
+  border: none;
+}
+
+/* Specific color for dark button */
+.btn-dark {
+  background: #2c3e50;
+  color: #fff;
+  border: none;
+  margin-top: 8px; /* Keep this specific spacing */
+}
+
+/* Override hover effects for btn-primary in the poker cards */
+.poker-cards .btn.btn-primary:hover {
+  transform: none !important;
+  padding-right: initial !important;
+  box-shadow: none !important;
+}

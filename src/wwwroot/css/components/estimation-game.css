@@ -1,0 +1,259 @@
+/* Estimation Game Styling */
+.estimation-game {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  color: white;
+  position: relative;
+  z-index: 10;
+  background: linear-gradient(145deg, #1b4d2b 0%, #0e3219 100%);
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4),
+              inset 0 2px 8px rgba(255, 255, 255, 0.1);
+  border: 1px solid #2a5a38;
+  position: relative;
+}
+
+.estimation-game::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    repeating-linear-gradient(45deg, 
+      rgba(255, 255, 255, 0.03) 0px, 
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px, 
+      transparent 4px
+    );
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.game-title {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.game-title h3 {
+  font-size: 1.5rem;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  margin: 0;
+}
+
+/* Card Grid Layout */
+.card-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.card-row {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.game-controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.waiting-for-host {
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+}
+
+/* Results view styling */
+/* Results Styling */
+.results-view {
+  color: white;
+  padding: 1rem;
+}
+
+.results-view h3, .results-view h4 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.results-statistics {
+  display: flex;
+  justify-content: space-around;
+  gap: 2rem;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 120px;
+  flex: 1;
+  max-width: 200px;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.stat-item.recommended {
+  background-color: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #FFD700;
+}
+
+.recommended .stat-value {
+  font-size: 1.4rem;
+}
+
+.vote-distribution {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.vote-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.5rem;
+}
+
+.vote-card-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vote-card-container.dimmed {
+  opacity: 0.4;
+}
+
+.vote-count-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #FFD700;
+  color: #000;
+  font-weight: bold;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  min-width: 24px;
+  text-align: center;
+  z-index: 1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Game Controls */
+.game-controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.empty-icon {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  letter-spacing: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .estimation-game {
+    padding: 1rem;
+    width: calc(100% - 2rem);
+    margin: 0 1rem;
+  }
+
+  .card-grid {
+    gap: 1rem;
+  }
+
+  .card-row {
+    gap: 1rem;
+  }
+
+  .results-statistics {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .stat-item {
+    width: 100%;
+    max-width: none;
+  }
+
+  .stat-item.recommended {
+    order: -1;
+    margin-bottom: 1rem;
+  }
+
+  .vote-cards {
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .estimation-game {
+    padding: 0.75rem;
+  }
+
+  .card-grid {
+    gap: 0.75rem;
+  }
+
+  .card-row {
+    gap: 0.75rem;
+  }
+
+  .stat-value {
+    font-size: 1.1rem;
+  }
+
+  .recommended .stat-value {
+    font-size: 1.3rem;
+  }
+
+  .vote-cards {
+    gap: 0.5rem;
+  }
+
+  .vote-count-badge {
+    font-size: 0.85rem;
+    min-width: 20px;
+    padding: 0.15rem 0.4rem;
+  }
+}

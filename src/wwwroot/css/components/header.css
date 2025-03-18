@@ -1,0 +1,160 @@
+/* Modern Header Animations */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.app-header {
+  background-size: 200% 200%;
+  animation: gradientShift 15s ease infinite;
+}
+
+.app-header .container {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0;
+}
+
+.header-content {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Static distances and styling for brand and user area */
+.app-brand {
+  overflow: hidden; /* Prevent overflow */
+  margin-left: 0.25rem;
+}
+
+.user-area {
+  margin-right: 0.25rem;
+}
+
+.app-brand h1 {
+  position: relative;
+  padding-left: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem; /* Explicit gap between words */
+  max-width: 100%; /* Prevent title from pushing layout */
+}
+
+/* Title word styling */
+.title-word {
+  display: inline-block; /* Ensures each word is treated as a block */
+}
+
+/* Title word styling */
+.title-word {
+  /* ...existing code... */
+}
+
+.app-brand h1 .highlight::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-gold),
+    transparent
+  );
+  transform: scaleX(0.8);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.app-brand h1:hover .highlight::after {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+/* Add subtle hover effect for user area */
+.user-area {
+  cursor: default;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Header style updates */
+
+/* Make username gold */
+.user-name {
+  position: relative;
+  color: #f1c40f !important; /* Gold color for username */
+  font-size: 1.1rem; /* Increased font size */
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.user-name::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: var(--color-gold);
+  transition: width 0.3s ease;
+}
+
+.user-area:hover .user-name::after {
+  width: 100%;
+}
+
+/* Update avatar suit color for better contrast */
+.avatar-suit {
+  color: rgba(255, 255, 255, 0.85) !important; /* More visible white color */
+  opacity: 0.85 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* Adjust avatar styles if needed */
+.card-avatar {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Add responsive behavior for narrow screens */
+@media (max-width: 400px) {
+  .app-header .container {
+    padding: 0 1rem;
+  }
+
+  .app-brand {
+    margin-left: 0.5rem;
+  }
+
+  .user-area {
+    margin-right: 0.5rem;
+  }
+
+  .app-brand h1 {
+    font-size: 1.1rem;
+    letter-spacing: 0;
+    gap: 0.2rem;
+  }
+
+  .title-word.highlight {
+    margin-left: -0.1rem; /* Slightly adjust spacing for better fit */
+  }
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+  }
+}
